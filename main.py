@@ -1,49 +1,129 @@
-from datetime import date
+from allocations import (
+    cancel_allocation,
+    create_allocation,
+    get_resource_status,
+    is_resource_available,
+)
+from resources import (
+    add_resource,
+    calculate_monthly_cost,
+    check_resource_capacity,
+    find_resource,
+    get_resources_statistics,
+)
+from storage import load_allocations, load_resources, save_allocations, save_resources
+from utils import input_date, input_int
 
-CPU_RATE = 500
-RAM_RATE = 150
-STORAGE_RATE = 10
+RESOURCES_FILE = "data/resources.json"
+ALLOCATIONS_FILE = "data/allocations.json"
 
-resource_name = "VM-Prod-01"
-cpu_cores = 4
-ram_gb = 16
-storage_gb = 100
-allocation_date = date(2026, 9, 15)
-is_available = True
-
-
-def get_resource_status(is_available):
-    if is_available:
-        return "Ресурс доступен для выделения"
-    return "Ресурс уже занят"
+MENU = """=== Система управления виртуальными ресурсами ===
+1. Показать ресурсы
+2. Найти ресурс по названию
+3. Проверить вместимость по RAM
+4. Проверить доступность ресурса на дату
+5. Выделить ресурс (создать заявку)
+6. Отменить заявку
+7. Показать заявки
+8. Показать статистику
+0. Выход"""
 
 
-def calculate_monthly_cost(cpu_cores, ram_gb, storage_gb):
-    cost = cpu_cores * CPU_RATE + ram_gb * RAM_RATE + storage_gb * STORAGE_RATE
-    return cost
+def show_resources(resources: dict[int, dict]) -> None:
+    """Вывести список ресурсов в виде таблицы."""
+    if not resources:
+        print("Список ресурсов пуст")
+        return
+    for resource_id, data in sorted(resources.items()):
+        cost = calculate_monthly_cost(
+            data["cpu_cores"], data["ram_gb"], data["storage_gb"]
+        )
+        print(
+            f"{resource_id}. {data['name']} — "
+            f"{data['cpu_cores']} CPU, {data['ram_gb']} ГБ RAM, "
+            f"{data['storage_gb']} ГБ, {cost} руб./мес."
+        )
 
 
-def check_capacity(requested_ram, available_ram):
-    if requested_ram <= available_ram:
-        return True
-    return False
+def show_allocations(allocations: list[dict]) -> None:
+    """Вывести список заявок на выделение ресурсов."""
+    if not allocations:
+        print("Список заявок пуст")
+        return
+    for allocation in allocations:
+        print(
+            f"{allocation['id']}. Ресурс {allocation['resource_id']} — "
+            f"{allocation['allocation_date']}"
+        )
 
 
-print(f"Ресурс: {resource_name}")
-print(f"CPU: {cpu_cores} ядер")
-print(f"RAM: {ram_gb} ГБ")
-print(f"Хранилище: {storage_gb} ГБ")
-print(f"Дата выделения: {allocation_date}")
-print(get_resource_status(is_available))
+def show_statistics(resources: dict[int, dict]) -> None:
+    """Вывести статистику по ресурсам."""
+    stats = get_resources_statistics(resources)
+    print(f"Ресурсов: {stats['count']}")
+    print(f"Средний объём RAM: {stats['avg_ram']:.1f} ГБ")
+    print(f"Суммарная стоимость аренды: {stats['total_monthly_cost']} руб./мес.")
 
-monthly_cost = calculate_monthly_cost(cpu_cores, ram_gb, storage_gb)
-print(f"Стоимость аренды в месяц: {int(monthly_cost)} руб.")
 
-requested_ram = int("32")
-capacity_ok = check_capacity(requested_ram, ram_gb)
-print(f"Запрошено RAM: {requested_ram} ГБ")
+def main() -> None:
+    """Точка запуска приложения: цикл меню."""
+    resources = load_resources(RESOURCES_FILE)
+    allocations = load_allocations(ALLOCATIONS_FILE)
 
-if capacity_ok:
-    print("Достаточно ресурсов для расширения")
-else:
-    print("Недостаточно ресурсов для расширения")
+    if not resources:
+        add_resource(resources, "VM-Prod-01", 4, 16, 100)
+        add_resource(resources, "VM-Dev-02", 2, 8, 50)
+
+    while True:
+        print(MENU)
+        choice = input("Выберите действие: ")
+
+        if choice == "1":
+            show_resources(resources)
+        elif choice == "2":
+            query = input("Название ресурса: ")
+            found = find_resource(resources, query)
+            show_resources({item["id"]: item for item in found})
+        elif choice == "3":
+            resource_id = input_int("Идентификатор ресурса: ")
+            min_ram = input_int("Минимальный объём RAM (ГБ): ")
+            if check_resource_capacity(resources, resource_id, min_ram):
+                print("Ресурсу достаточно RAM")
+            else:
+                print("Ресурсу не хватает RAM")
+        elif choice == "4":
+            resource_id = input_int("Идентификатор ресурса: ")
+            allocation_date = input_date("Дата (ДД.ММ.ГГГГ): ")
+            available = is_resource_available(
+                allocations, resource_id, allocation_date
+            )
+            print(get_resource_status(available))
+        elif choice == "5":
+            resource_id = input_int("Идентификатор ресурса: ")
+            allocation_date = input_date("Дата (ДД.ММ.ГГГГ): ")
+            if is_resource_available(allocations, resource_id, allocation_date):
+                create_allocation(allocations, resource_id, allocation_date)
+                print("Заявка создана")
+            else:
+                print("Ресурс уже занят на эту дату")
+        elif choice == "6":
+            allocation_id = input_int("Идентификатор заявки: ")
+            if cancel_allocation(allocations, allocation_id):
+                print("Заявка отменена")
+            else:
+                print("Заявка не найдена")
+        elif choice == "7":
+            show_allocations(allocations)
+        elif choice == "8":
+            show_statistics(resources)
+        elif choice == "0":
+            save_resources(RESOURCES_FILE, resources)
+            save_allocations(ALLOCATIONS_FILE, allocations)
+            print("Данные сохранены. Завершение работы.")
+            break
+        else:
+            print("Неизвестный пункт меню")
+
+
+if __name__ == "__main__":
+    main()
