@@ -2,11 +2,15 @@
   {
     "id": 1,
     "resource_id": 1,
-    "allocation_date": "2026-09-15"
+    "allocation_date": "2026-09-15",
+    "user_id": 1,
+    "is_cancelled": false
   },
   {
     "id": 2,
     "resource_id": 2,
-    "allocation_date": "2026-09-20"
+    "allocation_date": "2026-09-20",
+    "user_id": 1,
+    "is_cancelled": false
   }
 ]

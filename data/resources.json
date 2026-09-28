@@ -4,15 +4,13 @@
     "name": "VM-Prod-01",
     "cpu_cores": 4,
     "ram_gb": 16,
-    "storage_gb": 100,
-    "is_available": true
+    "storage_gb": 100
   },
   {
     "id": 2,
     "name": "VM-Dev-02",
     "cpu_cores": 2,
     "ram_gb": 8,
-    "storage_gb": 50,
-    "is_available": true
+    "storage_gb": 50
   }
 ]
