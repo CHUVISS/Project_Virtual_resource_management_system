@@ -1,5 +1,9 @@
 from models import Resource
-from models.resource import add_resource, check_resource_capacity, find_resource
+from models.resource import (
+    add_resource,
+    check_resource_capacity,
+    find_resource,
+)
 
 
 def test_resource_creation():

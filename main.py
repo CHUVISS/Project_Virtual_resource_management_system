@@ -73,7 +73,8 @@ def show_statistics(resources: list[Resource]) -> None:
     stats = get_resources_statistics(resources)
     print(f"Ресурсов: {stats['count']}")
     print(f"Средний объём RAM: {stats['avg_ram']:.1f} ГБ")
-    print(f"Суммарная стоимость аренды: {stats['total_monthly_cost']} руб./мес.")
+    total_cost = stats['total_monthly_cost']
+    print(f"Суммарная стоимость аренды: {total_cost} руб./мес.")
 
 
 def create_new_allocation(

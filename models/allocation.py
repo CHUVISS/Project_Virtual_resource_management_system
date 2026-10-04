@@ -59,13 +59,25 @@ def create_allocation(
     return allocation
 
 
-def cancel_allocation(allocations: list[Allocation], allocation_id: int) -> bool:
+def cancel_allocation(
+    allocations: list[Allocation], allocation_id: int
+) -> bool:
     """Найти заявку по идентификатору и отменить её."""
     for allocation in allocations:
         if allocation.id == allocation_id:
             allocation.cancel()
             return True
     return False
+
+
+def find_allocation_by_id(
+    allocations: list[Allocation], allocation_id: int
+) -> Allocation | None:
+    """Найти заявку по идентификатору."""
+    for allocation in allocations:
+        if allocation.id == allocation_id:
+            return allocation
+    return None
 
 
 def get_resource_status(is_available: bool) -> str:
