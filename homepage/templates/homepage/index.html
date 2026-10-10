@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Главная – Виртуальные ресурсы
+{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <h1>Система управления виртуальными ресурсами</h1>
+        <p class="lead">
+            Учёт виртуальных машин, их стоимости и заявок пользователей
+            на выделение ресурсов.
+        </p>
+        <a href="{% url 'resources:list' %}" class="btn btn-light btn-lg me-2">
+            Каталог ресурсов
+        </a>
+        <a href="{% url 'allocations:list' %}" class="btn btn-outline-light btn-lg">
+            Заявки
+        </a>
+    </section>
+
+    <section class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ statistics.count }}</div>
+                <div class="stat-label">ресурсов</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ active_count }} / {{ allocations_count }}</div>
+                <div class="stat-label">активных заявок</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ statistics.avg_ram|floatformat:1 }} ГБ</div>
+                <div class="stat-label">средний объём RAM</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ statistics.total_monthly_cost }} ₽</div>
+                <div class="stat-label">стоимость всех ресурсов в месяц</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="row g-4">
+        <div class="col-lg-7">
+            <h2 class="section-title">Последние заявки</h2>
+            <div class="list-group">
+                {% for allocation in recent_allocations %}
+                    <a
+                        href="{% url 'allocations:detail' allocation.id %}"
+                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                    >
+                        <span>
+                            <strong>{{ allocation.resource.name }}</strong>
+                            <span class="text-muted">
+                                · {{ allocation.user.name }}
+                                · {{ allocation.date|date:"d.m.Y" }}
+                            </span>
+                        </span>
+                        {% include "allocations/includes/allocation_status.html" %}
+                    </a>
+                {% empty %}
+                    <div class="list-group-item">Заявок пока нет.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <h2 class="section-title">Возможности</h2>
+            <ul class="feature-list">
+                <li>каталог виртуальных машин с характеристиками CPU, RAM и диска;</li>
+                <li>расчёт ежемесячной стоимости аренды;</li>
+                <li>проверка доступности ресурса на текущую дату;</li>
+                <li>просмотр заявок и их статусов;</li>
+                <li>пользователей в системе: {{ users_count }}.</li>
+            </ul>
+        </div>
+    </section>
+{% endblock %}

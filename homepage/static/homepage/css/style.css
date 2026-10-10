@@ -1,0 +1,194 @@
+:root {
+    --vrm-primary: #0d6efd;
+    --vrm-dark: #1e293b;
+    --vrm-muted: #64748b;
+    --vrm-bg: #f1f5f9;
+    --vrm-border: #e2e8f0;
+}
+
+body {
+    min-height: 100vh;
+    background-color: var(--vrm-bg);
+    color: var(--vrm-dark);
+}
+
+/* Шапка и навигация */
+.site-header {
+    background: #fff;
+    border-bottom: 1px solid var(--vrm-border);
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+    padding: 0.5rem 0;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--vrm-dark);
+    font-weight: 700;
+    font-size: 1.25rem;
+    text-decoration: none;
+}
+
+.brand-text {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.vrm-logo {
+    width: 96px;
+    height: auto;
+}
+
+.site-header .nav-link {
+    color: var(--vrm-muted);
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.site-header .nav-link:hover {
+    color: var(--vrm-primary);
+}
+
+.site-header .nav-link.active {
+    color: #fff;
+    background: var(--vrm-primary);
+}
+
+/* Главная страница */
+.hero {
+    padding: 3rem 2rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+    background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+    border-radius: 16px;
+}
+
+.hero h1 {
+    font-weight: 700;
+}
+
+.stat-card {
+    height: 100%;
+    padding: 1.25rem;
+    background: #fff;
+    border: 1px solid var(--vrm-border);
+    border-radius: 12px;
+}
+
+.stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--vrm-primary);
+}
+
+.stat-label {
+    color: var(--vrm-muted);
+    font-size: 0.9rem;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.feature-list {
+    padding: 1.25rem 1.25rem 1.25rem 2.25rem;
+    background: #fff;
+    border: 1px solid var(--vrm-border);
+    border-radius: 12px;
+}
+
+/* Заголовок страниц и навигация назад */
+.page-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.page-head h1 {
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: var(--vrm-muted);
+    text-decoration: none;
+}
+
+.back-link:hover {
+    color: var(--vrm-primary);
+}
+
+/* Карточки ресурсов */
+.resource-card {
+    border: 1px solid var(--vrm-border);
+    border-left: 4px solid var(--vrm-primary);
+    border-radius: 12px;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.resource-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+
+.spec-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.spec {
+    padding: 0.2rem 0.6rem;
+    background: var(--vrm-bg);
+    border-radius: 999px;
+    font-size: 0.85rem;
+}
+
+.price {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.price small {
+    color: var(--vrm-muted);
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+/* Таблицы и статусы заявок */
+.table {
+    overflow: hidden;
+    border: 1px solid var(--vrm-border);
+}
+
+.clickable-row {
+    cursor: pointer;
+}
+
+.allocation-status {
+    font-weight: 600;
+}
+
+.not-found {
+    padding: 2rem;
+    background: #fff;
+    border: 1px solid var(--vrm-border);
+    border-radius: 12px;
+}
+
+/* Подвал */
+.site-footer {
+    padding: 1.25rem 0;
+    color: var(--vrm-muted);
+    background: #fff;
+    border-top: 1px solid var(--vrm-border);
+    font-size: 0.9rem;
+}
