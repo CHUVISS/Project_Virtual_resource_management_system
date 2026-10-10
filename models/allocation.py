@@ -1,3 +1,5 @@
+from datetime import date
+
 from .resource import Resource
 from .user import User
 
@@ -17,6 +19,11 @@ class Allocation:
         self.allocation_date = allocation_date
         self.user = user
         self.is_cancelled = False
+
+    @property
+    def date(self) -> date:
+        """Дата выделения в виде объекта date (для вывода в шаблонах)."""
+        return date.fromisoformat(self.allocation_date)
 
     def cancel(self) -> None:
         """Отменить заявку."""

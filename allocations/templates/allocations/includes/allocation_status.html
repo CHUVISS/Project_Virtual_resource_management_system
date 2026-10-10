@@ -1,0 +1,9 @@
+{% if allocation.is_cancelled %}
+    <span class="badge bg-secondary allocation-status allocation-status-cancelled">
+        Отменена
+    </span>
+{% else %}
+    <span class="badge bg-success allocation-status allocation-status-active">
+        Активна
+    </span>
+{% endif %}

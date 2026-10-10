@@ -1,0 +1,30 @@
+{% load static %}
+{% with section=request.resolver_match.app_name %}
+    <header class="site-header">
+        <nav class="container d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <a class="brand" href="{% url 'homepage:index' %}">
+                <img
+                    src="{% static 'homepage/img/logo.png' %}"
+                    alt="Логотип"
+                    class="vrm-logo"
+                >
+                <span class="brand-text">Виртуальные ресурсы</span>
+            </a>
+
+            <div class="nav">
+                <a
+                    class="nav-link{% if section == 'homepage' %} active{% endif %}"
+                    href="{% url 'homepage:index' %}"
+                >Главная</a>
+                <a
+                    class="nav-link{% if section == 'resources' %} active{% endif %}"
+                    href="{% url 'resources:list' %}"
+                >Ресурсы</a>
+                <a
+                    class="nav-link{% if section == 'allocations' %} active{% endif %}"
+                    href="{% url 'allocations:list' %}"
+                >Заявки</a>
+            </div>
+        </nav>
+    </header>
+{% endwith %}

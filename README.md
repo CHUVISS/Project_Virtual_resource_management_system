@@ -3,18 +3,18 @@
 **Студент:** Чувилов Александр Александрович, группа ЭФБО-07-24
 **Преподаватель:** Ящун Татьяна Викторовна
 
-Учебный проект по дисциплине «Технологии разработки приложений на базе фреймворков». Проект развивается от работы к работе: консольный скрипт (ПР1), функции и JSON (ПР2), объектная модель (ПР3) и, начиная с ПР5, веб-интерфейс на Django.
+Учебный проект по дисциплине «Технологии разработки приложений на базе фреймворков». Проект развивается от работы к работе: консольный скрипт (ПР1), функции и JSON (ПР2), объектная модель (ПР3) веб-интерфейс на Django (ПР5) и система шаблонов Django (ПР6).
 
 ## 🎯 Назначение
 
-Приложение предназначено для учёта виртуальных ресурсов (виртуальных машин с CPU, RAM и дисковым пространством) и заявок пользователей на их выделение. Консольная версия приложения (ПР3) дополнена веб-интерфейсом на Django (ПР5).
+Приложение предназначено для учёта виртуальных ресурсов (виртуальных машин с CPU, RAM и дисковым пространством) и заявок пользователей на их выделение. Консольная версия приложения (ПР3) дополнена веб-интерфейсом на Django (ПР5), страницы которого с ПР6 формируются шаблонами Django.
 
 В веб-интерфейсе можно:
-* просматривать список виртуальных ресурсов;
-* просматривать информацию о конкретном ресурсе и его стоимости;
-* проверять доступность ресурса на текущую дату;
-* просматривать список заявок на выделение ресурсов;
-* просматривать информацию о конкретной заявке.
+* видеть сводку на главной странице: число ресурсов, активные заявки, средний объём RAM, общую стоимость и последние заявки;
+* просматривать каталог виртуальных ресурсов с доступностью на текущую дату и сортировкой по объёму RAM;
+* просматривать страницу ресурса: характеристики, расчёт стоимости аренды по составляющим и заявки на этот ресурс;
+* просматривать список заявок с фильтром «все / активные / отменённые»;
+* просматривать страницу заявки: дату, пользователя, его email, статус и сведения о ресурсе.
 
 В консольной версии дополнительно доступны:
 * поиск ресурсов по названию и проверка вместимости по RAM;
@@ -28,8 +28,10 @@
 
 * Python 3;
 * Django 5.2 – веб-фреймворк;
+* Django Template Language (DTL) – шаблоны страниц;
 * HTML – разметка веб-страниц;
 * CSS и Bootstrap 5.3 – оформление страниц;
+* JavaScript – клиентское поведение интерфейса;
 * pytest – автоматизированные тесты;
 * flake8 – проверка качества кода.
 
@@ -95,18 +97,45 @@
 
 ## 🌐 Страницы веб-интерфейса
 
-* `/` – главная страница: описание приложения и навигация (view-функция `index()`);
-* `/resources/` – список ресурсов: объекты `Resource` из `data/resources.json` (view-функция `resources()`);
-* `/resources/<int:resource_id>/` – страница ресурса (view-функция `resource_detail()`);
-* `/allocations/` – список заявок: объекты `Allocation` из `data/allocations.json` (view-функция `allocations()`);
-* `/allocations/<int:allocation_id>/` – страница заявки (view-функция `allocation_detail()`).
+| URL | Имя маршрута | View-функция | Шаблон |
+|---|---|---|---|
+| `/` | `homepage:index` | `index()` | `homepage/index.html` |
+| `/resources/` | `resources:list` | `resources()` | `resources/resource_list.html` |
+| `/resources/<int:resource_id>/` | `resources:detail` | `resource_detail()` | `resources/resource_detail.html` |
+| `/allocations/` | `allocations:list` | `allocations()` | `allocations/allocation_list.html` |
+| `/allocations/<int:allocation_id>/` | `allocations:detail` | `allocation_detail()` | `allocations/allocation_detail.html` |
 
-Если ресурс или заявка с указанным идентификатором не найдены, соответствующая страница возвращает код статуса 404.
+Если ресурс или заявка с указанным идентификатором не найдены, страница выводит сообщение «не найден» и возвращает код статуса 404.
+
+## 🎨 Шаблоны Django (ПР6)
+
+HTML-код вынесен из Python в шаблоны. View-функция загружает данные из JSON, формирует контекст и вызывает `render(request, "шаблон.html", context)`:
+
+```text
+View → Context → Template → HTML
+```
+
+Используемые возможности Django Template Language:
+* базовый шаблон `templates/base.html` с блоками `{% block title %}` и `{% block content %}`;
+* наследование шаблонов `{% extends "base.html" %}`;
+* включаемые шаблоны `{% include %}`: навигация (`templates/includes/navigation.html`), карточка ресурса (`resources/includes/resource_card.html`), статус заявки (`allocations/includes/allocation_status.html`);
+* передача данных через контекст;
+* циклы `{% for %}` с блоком `{% empty %}` и условия `{% if %}` / `{% else %}`;
+* именованные URL и пространства имён (`app_name`): `{% url 'resources:detail' resource.id %}`;
+* фильтры `length`, `default`, `date`, `floatformat`, `lower` и тег `{% widthratio %}`;
+* подсветка активного раздела меню через `request.resolver_match.app_name`;
+* статические файлы `{% load static %}`: собственный CSS (`style.css`), JavaScript (`main.js`: текущий год в подвале и переход по клику на строку таблицы) и изображение (`logo.png`) в `homepage/static/homepage/`.
+
+Параметры отображения передаются через GET-параметры ссылок, без форм: `/resources/?sort=ram`, `/allocations/?status=active`, `/allocations/?status=cancelled`.
+
+Каталог шаблонов уровня проекта `templates/` подключён в `settings.py` через параметр `DIRS` списка `TEMPLATES`.
 
 ## ⚙️ Основные операции
 
-### Используется в веб-интерфейсе (ПР5)
+### Используется в веб-интерфейсе (ПР5, ПР6)
 
+* сводная статистика по ресурсам (`get_resources_statistics()`);
+* сортировка ресурсов по RAM (`sort_resources()`);
 * просмотр списка ресурсов;
 * просмотр информации о ресурсе;
 * просмотр списка заявок;
@@ -121,7 +150,6 @@
 * поиск ресурса по названию;
 * проверка вместимости;
 * фильтрация ресурсов по RAM;
-* сортировка ресурсов;
 * создание заявки;
 * отмена заявки;
 * создание пользователя;
@@ -150,6 +178,11 @@ virtual-resources-manager/
 ├── storage.py
 ├── utils.py
 │
+├── templates/
+│   ├── base.html
+│   └── includes/
+│       └── navigation.html
+│
 ├── vrm/
 │   ├── __init__.py
 │   ├── settings.py
@@ -165,7 +198,12 @@ virtual-resources-manager/
 │   ├── models.py
 │   ├── tests.py
 │   ├── urls.py
-│   └── views.py
+│   ├── views.py
+│   ├── templates/homepage/index.html
+│   └── static/homepage/
+│       ├── css/style.css
+│       ├── js/main.js
+│       └── img/logo.png
 │
 ├── resources/
 │   ├── __init__.py
@@ -175,7 +213,11 @@ virtual-resources-manager/
 │   ├── models.py
 │   ├── tests.py
 │   ├── urls.py
-│   └── views.py
+│   ├── views.py
+│   └── templates/resources/
+│       ├── resource_list.html
+│       ├── resource_detail.html
+│       └── includes/resource_card.html
 │
 ├── allocations/
 │   ├── __init__.py
@@ -185,7 +227,11 @@ virtual-resources-manager/
 │   ├── models.py
 │   ├── tests.py
 │   ├── urls.py
-│   └── views.py
+│   ├── views.py
+│   └── templates/allocations/
+│       ├── allocation_list.html
+│       ├── allocation_detail.html
+│       └── includes/allocation_status.html
 │
 ├── models/
 │   ├── __init__.py
@@ -201,7 +247,8 @@ virtual-resources-manager/
 └── tests/
     ├── test_resources.py
     ├── test_users.py
-    └── test_allocations.py
+    ├── test_allocations.py
+    └── test_views.py
 ```
 
 ## 📚 Назначение модулей
@@ -220,23 +267,27 @@ virtual-resources-manager/
 ### `homepage/`
 
 Django-приложение, отвечающее за главную страницу:
-* `views.py` – функция `page()` (общий HTML-каркас) и view-функция `index()`;
-* `urls.py` – маршрут главной страницы.
+* `views.py` – view-функция `index()`, вызывающая `render()`;
+* `urls.py` – маршрут главной страницы (`app_name = "homepage"`);
+* `templates/homepage/index.html` – шаблон главной страницы;
+* `static/homepage/` – общие статические файлы проекта: CSS, JavaScript и логотип.
 
-Функция `page()` размещена здесь, потому что главная страница задаёт общий вид всех остальных страниц – она точка входа в проект. Остальные приложения импортируют её.
+Функция `page()` из ПР5 удалена: общий HTML-каркас страниц теперь находится в `templates/base.html`.
 
 ### `resources/`
 
 Django-приложение, отвечающее за ресурсы:
 * `views.py` – view-функции `resources()` и `resource_detail()`;
-* `urls.py` – маршруты приложения;
+* `urls.py` – маршруты приложения (`app_name = "resources"`);
+* `templates/resources/` – шаблоны списка, страницы и карточки ресурса;
 * `models.py` – Django-модели (заполняется в следующих работах).
 
 ### `allocations/`
 
 Django-приложение, отвечающее за заявки:
 * `views.py` – view-функции `allocations()` и `allocation_detail()`;
-* `urls.py` – маршруты приложения;
+* `urls.py` – маршруты приложения (`app_name = "allocations"`);
+* `templates/allocations/` – шаблоны списка, страницы заявки и статуса заявки;
 * `models.py` – Django-модели (заполняется в следующих работах).
 
 Для пользователей отдельное Django-приложение не создаётся: Django предоставляет встроенную модель User в `django.contrib.auth`.
@@ -260,7 +311,7 @@ Django-приложение, отвечающее за заявки:
 
 ### `tests/`
 
-Автоматизированные тесты проекта (ПР3).
+Автоматизированные тесты проекта: тесты предметной области (ПР3) и тесты веб-страниц `test_views.py` (ПР6) – коды ответов, 404, используемые шаблоны и фильтр заявок.
 
 ## ▶️ Запуск приложения
 
@@ -324,7 +375,10 @@ python manage.py check
 git status
 ```
 
-Каждый коммит, относящийся к ПР5, начинается с метки `PR5:`.
+Каждый коммит, относящийся к ПР6, начинается с метки `PR6:`. Пример:
+```text
+git commit -m "PR6: add Django templates and static files"
+```
 
 ## 🚀 Текущее состояние и план развития
 
@@ -333,14 +387,24 @@ git status
 * маршрутизация URL двух уровней;
 * view-функции и страницы;
 * отображение данных предметной области (ресурсы и заявки);
-* проверка доступности ресурса через логику ПР3;
-* навигация между страницами;
-* оформление Bootstrap 5.3.
+* проверка доступности ресурса через логику ПР3.
+
+Реализовано (ПР6):
+* Django Template Language, базовый шаблон `base.html`, наследование шаблонов и блоки `block`;
+* включаемые шаблоны `include`;
+* передача данных через контекст, циклы и условия;
+* именованные URL и пространства имён;
+* фильтры шаблонов;
+* статические файлы: собственные CSS, JavaScript и изображение;
+* отказ от функции `page()`, оформление Bootstrap 5.3 и собственные стили;
+* главная страница со статистикой, сортировка ресурсов, фильтр заявок по статусу, расчёт стоимости на странице ресурса;
+* тесты веб-страниц.
+
+Данные по-прежнему хранятся в JSON, Django ORM и формы пока не используются.
 
 Планируется:
 * перенос сущностей `Resource`, `User` и `Allocation` в Django ORM;
 * подключение базы данных;
-* переход на шаблоны (`templates/`) и отказ от функции `page()`;
 * формы создания и редактирования заявок;
 * использование отложенной логики ПР3 (`create_allocation()`, `cancel_allocation()`, `add_resource()`, поиск и сортировка);
 * разработка API;
@@ -363,8 +427,8 @@ git status
 | `find_resource_by_id()` | `models/resource.py` | поиск объекта Resource по идентификатору; используется веб-страницей ресурса |
 | `check_resource_capacity()` | `models/resource.py` | поиск ресурса и проверка его вместимости по RAM |
 | `filter_resources_by_ram()` | `models/resource.py` | отбор объектов Resource по объёму RAM |
-| `sort_resources()` | `models/resource.py` | сортировка коллекции объектов Resource |
-| `get_resources_statistics()` | `models/resource.py` | статистика по ресурсам |
+| `sort_resources()` | `models/resource.py` | сортировка коллекции объектов Resource; используется списком ресурсов (`?sort=ram`) |
+| `get_resources_statistics()` | `models/resource.py` | статистика по ресурсам; используется главной страницей |
 
 Сущность User – пользователь (ПР3):
 
@@ -382,6 +446,7 @@ git status
 | Имя функции | Файл расположения | Назначение |
 |---|---|---|
 | `Allocation` (класс) | `models/allocation.py` | заявка: атрибуты id, resource, user, allocation_date, is_cancelled |
+| `date` (свойство) | `models/allocation.py` | дата выделения как объект date для фильтра `date` в шаблонах (добавлено в ПР6) |
 | `cancel()` | `models/allocation.py` | отмена заявки (установка признака is_cancelled) |
 | `__str__()` | `models/allocation.py` | строковое представление заявки |
 | `find_allocation_by_id()` | `models/allocation.py` | поиск объекта Allocation по идентификатору (добавлена в ПР5); используется веб-страницей заявки |

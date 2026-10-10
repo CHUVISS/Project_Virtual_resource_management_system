@@ -5,5 +5,33 @@
     "allocation_date": "2026-09-15",
     "user_id": 1,
     "is_cancelled": false
+  },
+  {
+    "id": 2,
+    "resource_id": 3,
+    "allocation_date": "2026-10-10",
+    "user_id": 2,
+    "is_cancelled": false
+  },
+  {
+    "id": 3,
+    "resource_id": 2,
+    "allocation_date": "2026-10-12",
+    "user_id": 3,
+    "is_cancelled": true
+  },
+  {
+    "id": 4,
+    "resource_id": 5,
+    "allocation_date": "2026-11-01",
+    "user_id": 1,
+    "is_cancelled": false
+  },
+  {
+    "id": 5,
+    "resource_id": 1,
+    "allocation_date": "2026-11-20",
+    "user_id": 2,
+    "is_cancelled": true
   }
 ]

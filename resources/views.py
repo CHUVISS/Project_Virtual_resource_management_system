@@ -1,105 +1,93 @@
 from datetime import date
 
-from django.http import HttpResponse
+from django.shortcuts import render
 
-from homepage.views import page
 from models.allocation import is_resource_available
-from models.resource import find_resource_by_id
+from models.resource import (
+    CPU_RATE,
+    RAM_RATE,
+    STORAGE_RATE,
+    find_resource_by_id,
+    sort_resources,
+)
 from storage import load_allocations, load_resources, load_users
 
 
-def resources(request):
-    items = ""
-    for resource in load_resources("data/resources.json"):
-        text = (
-            f"{resource.name} – {resource.cpu_cores} CPU, "
-            f"{resource.ram_gb} ГБ RAM, {resource.storage_gb} ГБ"
-        )
-        items += (
-            '<li class="list-group-item">'
-            f'<a href="/resources/{resource.id}/">{text}</a>'
-            "</li>"
-        )
-    content = f"""
-    <h1>Ресурсы</h1>
-    <ul class="list-group">{items}</ul>
-    """
-    return HttpResponse(page("Ресурсы", content))
-
-
-def resource_detail(request, resource_id):
+def load_resources_with_allocations():
     resources_list = load_resources("data/resources.json")
-
-    resource = find_resource_by_id(resources_list, resource_id)
-
-    if resource is None:
-        content = """
-        <h1 class="text-danger">Ресурс не найден</h1>
-        <a href="/resources/" class="btn btn-outline-secondary">
-            ← к списку ресурсов
-        </a>
-        """
-
-        return HttpResponse(
-            page("Ресурс не найден", content),
-            status=404,
-        )
     users_list = load_users("data/users.json")
     allocations_list = load_allocations(
         "data/allocations.json",
         resources_list,
         users_list,
     )
-    available = is_resource_available(
-        allocations_list,
-        resource,
-        date.today().isoformat(),
+    return resources_list, allocations_list
+
+
+def resources(request):
+    resources_list, allocations_list = load_resources_with_allocations()
+    today = date.today()
+
+    sort = request.GET.get("sort", "")
+    if sort == "ram":
+        resources_list = sort_resources(resources_list)
+
+    resource_rows = [
+        {
+            "resource": resource,
+            "monthly_cost": resource.calculate_monthly_cost(),
+            "available": is_resource_available(
+                allocations_list,
+                resource,
+                today.isoformat(),
+            ),
+        }
+        for resource in resources_list
+    ]
+
+    context = {
+        "resource_rows": resource_rows,
+        "sort": sort,
+        "today": today,
+    }
+
+    return render(
+        request,
+        "resources/resource_list.html",
+        context,
     )
-    status = "доступен" if available else "занят"
-    badge = "bg-success" if available else "bg-danger"
 
-    content = f"""
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">{resource.name}</h5>
 
-            <p class="card-text">
-                <strong>ID:</strong> {resource.id}
-            </p>
+def resource_detail(request, resource_id):
+    resources_list, allocations_list = load_resources_with_allocations()
+    resource = find_resource_by_id(resources_list, resource_id)
 
-            <p class="card-text">
-                <strong>CPU:</strong> {resource.cpu_cores} ядер
-            </p>
+    context = {
+        "resource": resource,
+    }
 
-            <p class="card-text">
-                <strong>RAM:</strong> {resource.ram_gb} ГБ
-            </p>
+    if resource is not None:
+        today = date.today()
+        context["today"] = today
+        context["monthly_cost"] = resource.calculate_monthly_cost()
+        context["cost_parts"] = [
+            ("CPU", resource.cpu_cores, "ядер", CPU_RATE),
+            ("RAM", resource.ram_gb, "ГБ", RAM_RATE),
+            ("Хранилище", resource.storage_gb, "ГБ", STORAGE_RATE),
+        ]
+        context["available"] = is_resource_available(
+            allocations_list,
+            resource,
+            today.isoformat(),
+        )
+        context["resource_allocations"] = [
+            allocation for allocation in allocations_list
+            if allocation.resource.id == resource.id
+        ]
 
-            <p class="card-text">
-                <strong>Хранилище:</strong> {resource.storage_gb} ГБ
-            </p>
-
-            <p class="card-text">
-                <strong>Стоимость аренды:</strong>
-                {resource.calculate_monthly_cost()} руб./мес.
-            </p>
-
-            <p class="card-text">
-                Доступность на текущую дату:
-                <span class="badge {badge}">
-                    {status}
-                </span>
-            </p>
-
-            <a href="/resources/"
-               class="btn btn-outline-secondary">
-                ← к списку ресурсов
-            </a>
-        </div>
-    </div>
-    """
-
-    return HttpResponse(
-        page(resource.name, content),
-        status=200,
+    return render(
+        request,
+        "resources/resource_detail.html",
+        context,
+        status=404 if resource is None else 200,
     )

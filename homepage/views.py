@@ -1,36 +1,38 @@
-from django.http import HttpResponse
+from django.shortcuts import render
 
-
-def page(title, content):
-    bootstrap = (
-        "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3"
-        "/dist/css/bootstrap.min.css"
-    )
-    return f"""<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{title}</title>
-    <link rel="stylesheet" href="{bootstrap}">
-</head>
-<body>
-    <nav class="nav">
-        <a class="nav-link" href="/">Главная</a>
-        <a class="nav-link" href="/resources/">Ресурсы</a>
-        <a class="nav-link" href="/allocations/">Заявки</a>
-    </nav>
-    <main class="container">{content}</main>
-</body>
-</html>"""
+from models.resource import get_resources_statistics
+from storage import load_allocations, load_resources, load_users
 
 
 def index(request):
-    content = """
-    <h1 class="display-4">Система управления виртуальными ресурсами</h1>
-    <p class="lead">Учёт виртуальных ресурсов и заявок на их выделение.</p>
-    <p>Основные разделы:</p>
-    <a href="/resources/" class="btn btn-primary me-2">Ресурсы</a>
-    <a href="/allocations/" class="btn btn-secondary">Заявки</a>
-    """
-    return HttpResponse(page("Виртуальные ресурсы", content))
+    resources_list = load_resources("data/resources.json")
+    users_list = load_users("data/users.json")
+    allocations_list = load_allocations(
+        "data/allocations.json",
+        resources_list,
+        users_list,
+    )
+
+    active_allocations = [
+        allocation for allocation in allocations_list
+        if not allocation.is_cancelled
+    ]
+    recent_allocations = sorted(
+        allocations_list,
+        key=lambda allocation: allocation.allocation_date,
+        reverse=True,
+    )[:3]
+
+    context = {
+        "statistics": get_resources_statistics(resources_list),
+        "users_count": len(users_list),
+        "allocations_count": len(allocations_list),
+        "active_count": len(active_allocations),
+        "recent_allocations": recent_allocations,
+    }
+
+    return render(
+        request,
+        "homepage/index.html",
+        context,
+    )

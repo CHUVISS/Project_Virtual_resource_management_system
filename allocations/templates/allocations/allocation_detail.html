@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if allocation %}
+        Заявка №{{ allocation.id }} – Виртуальные ресурсы
+    {% else %}
+        Заявка не найдена – Виртуальные ресурсы
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <a href="{% url 'allocations:list' %}" class="back-link">← к списку заявок</a>
+
+    {% if allocation %}
+        <div class="page-head">
+            <h1>Заявка №{{ allocation.id }}</h1>
+            <div class="fs-5">
+                {% include "allocations/includes/allocation_status.html" %}
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Сведения о заявке</h2>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-5">Дата выделения</dt>
+                            <dd class="col-sm-7">{{ allocation.date|date:"d E Y" }}</dd>
+
+                            <dt class="col-sm-5">Пользователь</dt>
+                            <dd class="col-sm-7">{{ allocation.user.name }}</dd>
+
+                            <dt class="col-sm-5">Email</dt>
+                            <dd class="col-sm-7">
+                                <a href="mailto:{{ allocation.user.email }}">{{ allocation.user.email|lower }}</a>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card resource-card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Ресурс</h2>
+                        <p class="fs-5 mb-2">{{ allocation.resource.name }}</p>
+                        <div class="spec-list mb-3">
+                            <span class="spec">{{ allocation.resource.cpu_cores }} CPU</span>
+                            <span class="spec">{{ allocation.resource.ram_gb }} ГБ RAM</span>
+                            <span class="spec">{{ allocation.resource.storage_gb }} ГБ диск</span>
+                        </div>
+                        <a
+                            href="{% url 'resources:detail' allocation.resource.id %}"
+                            class="btn btn-outline-primary"
+                        >
+                            Страница ресурса
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="not-found">
+            <h1 class="text-danger">Заявка не найдена</h1>
+            <p>Заявка с указанным идентификатором отсутствует.</p>
+        </div>
+    {% endif %}
+{% endblock %}

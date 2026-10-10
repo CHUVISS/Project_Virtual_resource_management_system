@@ -1,0 +1,31 @@
+<article class="card resource-card h-100">
+    <div class="card-body d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h2 class="card-title h5 mb-0">
+                {{ resource.name|default:"Без названия" }}
+            </h2>
+            {% if available %}
+                <span class="badge bg-success">доступен</span>
+            {% else %}
+                <span class="badge bg-danger">занят</span>
+            {% endif %}
+        </div>
+
+        <div class="spec-list mb-3">
+            <span class="spec">{{ resource.cpu_cores }} CPU</span>
+            <span class="spec">{{ resource.ram_gb }} ГБ RAM</span>
+            <span class="spec">{{ resource.storage_gb }} ГБ диск</span>
+        </div>
+
+        <p class="price mt-auto">
+            {{ monthly_cost }} ₽ <small>/ мес.</small>
+        </p>
+
+        <a
+            href="{% url 'resources:detail' resource.id %}"
+            class="btn btn-outline-primary stretched-link"
+        >
+            Подробнее
+        </a>
+    </div>
+</article>

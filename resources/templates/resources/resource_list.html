@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Ресурсы – Виртуальные ресурсы
+{% endblock %}
+
+{% block content %}
+    <div class="page-head">
+        <div>
+            <h1>Ресурсы</h1>
+            <p class="text-muted mb-0">
+                Всего ресурсов: {{ resource_rows|length }} ·
+                доступность на {{ today|date:"d.m.Y" }}
+            </p>
+        </div>
+
+        <div class="btn-group" role="group" aria-label="Сортировка">
+            <a
+                href="{% url 'resources:list' %}"
+                class="btn btn-sm {% if sort == 'ram' %}btn-outline-primary{% else %}btn-primary{% endif %}"
+            >По порядку</a>
+            <a
+                href="{% url 'resources:list' %}?sort=ram"
+                class="btn btn-sm {% if sort == 'ram' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+            >По объёму RAM</a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        {% for row in resource_rows %}
+            <div class="col-md-6 col-lg-4">
+                {% include "resources/includes/resource_card.html" with resource=row.resource available=row.available monthly_cost=row.monthly_cost %}
+            </div>
+        {% empty %}
+            <p>Ресурсы не найдены.</p>
+        {% endfor %}
+    </div>
+{% endblock %}
