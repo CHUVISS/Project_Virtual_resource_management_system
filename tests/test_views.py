@@ -1,7 +1,7 @@
 import os
 
 import django
-from django.test import Client
+from django.test import Client, override_settings
 from django.test.utils import setup_test_environment
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "vrm.settings")
@@ -46,3 +46,10 @@ def test_templates_used():
 def test_allocation_status_filter():
     response = client.get("/allocations/?status=cancelled")
     assert all(a.is_cancelled for a in response.context["allocations"])
+
+
+@override_settings(DEBUG=False)
+def test_unknown_url_uses_handler404():
+    response = client.get("/nonexistent/")
+    assert response.status_code == 404
+    assert "404 – страница не найдена" in response.content.decode()

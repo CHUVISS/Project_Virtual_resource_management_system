@@ -7,3 +7,5 @@ urlpatterns = [
     path("resources/", include("resources.urls")),
     path("allocations/", include("allocations.urls")),
 ]
+
+handler404 = "homepage.views.page_not_found"

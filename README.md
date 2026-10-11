@@ -107,6 +107,12 @@
 
 Если ресурс или заявка с указанным идентификатором не найдены, страница выводит сообщение «не найден» и возвращает код статуса 404.
 
+Для адресов, которым не соответствует ни один маршрут (например, `/nonexistent/`), в корневом `vrm/urls.py` подключён обработчик:
+```python
+handler404 = "homepage.views.page_not_found"
+```
+Функция `page_not_found(request, exception)` формирует страницу из шаблона `homepage/page_not_found.html` и возвращает код статуса 404. Собственная страница видна только при `DEBUG = False` (при `DEBUG = True` Django показывает техническую страницу отладки); для такой проверки в `settings.py` заполнен `ALLOWED_HOSTS = ["localhost", "127.0.0.1"]`.
+
 ## 🎨 Шаблоны Django (ПР6)
 
 HTML-код вынесен из Python в шаблоны. View-функция загружает данные из JSON, формирует контекст и вызывает `render(request, "шаблон.html", context)`:
@@ -199,7 +205,9 @@ virtual-resources-manager/
 │   ├── tests.py
 │   ├── urls.py
 │   ├── views.py
-│   ├── templates/homepage/index.html
+│   ├── templates/homepage/
+│   │   ├── index.html
+│   │   └── page_not_found.html
 │   └── static/homepage/
 │       ├── css/style.css
 │       ├── js/main.js
@@ -267,9 +275,10 @@ virtual-resources-manager/
 ### `homepage/`
 
 Django-приложение, отвечающее за главную страницу:
-* `views.py` – view-функция `index()`, вызывающая `render()`;
+* `views.py` – view-функция `index()`, вызывающая `render()`, и обработчик ошибки 404 `page_not_found()`;
 * `urls.py` – маршрут главной страницы (`app_name = "homepage"`);
 * `templates/homepage/index.html` – шаблон главной страницы;
+* `templates/homepage/page_not_found.html` – шаблон собственной страницы 404;
 * `static/homepage/` – общие статические файлы проекта: CSS, JavaScript и логотип.
 
 Функция `page()` из ПР5 удалена: общий HTML-каркас страниц теперь находится в `templates/base.html`.
@@ -311,7 +320,7 @@ Django-приложение, отвечающее за заявки:
 
 ### `tests/`
 
-Автоматизированные тесты проекта: тесты предметной области (ПР3) и тесты веб-страниц `test_views.py` (ПР6) – коды ответов, 404, используемые шаблоны и фильтр заявок.
+Автоматизированные тесты проекта: тесты предметной области (ПР3) и тесты веб-страниц `test_views.py` (ПР6) – коды ответов, 404 (в том числе `handler404`), используемые шаблоны и фильтр заявок.
 
 ## ▶️ Запуск приложения
 
@@ -466,12 +475,12 @@ git commit -m "PR6: add Django templates and static files"
 | `load_allocations()` | загрузка `data/allocations.json`: JSON → объекты Allocation; используется веб-страницами ресурсов и заявок |
 | `save_allocations()` | сохранение `data/allocations.json`: объекты Allocation → JSON |
 
-Веб-слой (ПР5):
+Веб-слой (ПР5, ПР6):
 
 | Приложение | Имя функции | Файл расположения | Назначение |
 |---|---|---|---|
-| homepage | `page()` | `homepage/views.py` | единый каркас HTML-страницы: кодировка, заголовок, Bootstrap 5.3, навигация |
 | homepage | `index()` | `homepage/views.py` | главная страница `/` |
+| homepage | `page_not_found()` | `homepage/views.py` | обработчик `handler404`: собственная страница 404 для адресов без маршрута |
 | resources | `resources()` | `resources/views.py` | страница `/resources/`: список ресурсов из `data/resources.json` |
 | resources | `resource_detail()` | `resources/views.py` | страница `/resources/<int:resource_id>/`; если ресурс не найден – код статуса 404 |
 | allocations | `allocations()` | `allocations/views.py` | страница `/allocations/`: список заявок из `data/allocations.json` |

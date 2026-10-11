@@ -36,3 +36,11 @@ def index(request):
         "homepage/index.html",
         context,
     )
+
+
+def page_not_found(request, exception):
+    return render(
+        request,
+        "homepage/page_not_found.html",
+        status=404,
+    )
