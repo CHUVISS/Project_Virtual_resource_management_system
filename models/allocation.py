@@ -59,7 +59,9 @@ def create_allocation(
     return allocation
 
 
-def cancel_allocation(allocations: list[Allocation], allocation_id: int) -> bool:
+def cancel_allocation(
+    allocations: list[Allocation], allocation_id: int
+) -> bool:
     """Найти заявку по идентификатору и отменить её."""
     for allocation in allocations:
         if allocation.id == allocation_id:

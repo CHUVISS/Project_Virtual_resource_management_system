@@ -55,11 +55,16 @@ def filter_resources_by_ram(
 
 def sort_resources(resources: dict[int, dict]) -> list[dict]:
     """Отсортировать ресурсы по объёму RAM по убыванию."""
-    items = [{"id": resource_id, **data} for resource_id, data in resources.items()]
+    items = [
+        {"id": resource_id, **data}
+        for resource_id, data in resources.items()
+    ]
     return sorted(items, key=lambda item: item["ram_gb"], reverse=True)
 
 
-def calculate_monthly_cost(cpu_cores: int, ram_gb: int, storage_gb: int) -> int:
+def calculate_monthly_cost(
+    cpu_cores: int, ram_gb: int, storage_gb: int
+) -> int:
     """Рассчитать ежемесячную стоимость аренды ресурса."""
     return cpu_cores * CPU_RATE + ram_gb * RAM_RATE + storage_gb * STORAGE_RATE
 
@@ -70,7 +75,9 @@ def get_resources_statistics(resources: dict[int, dict]) -> dict:
         return {"count": 0, "avg_ram": 0, "total_monthly_cost": 0}
     ram_values = [data["ram_gb"] for data in resources.values()]
     total_cost = sum(
-        calculate_monthly_cost(data["cpu_cores"], data["ram_gb"], data["storage_gb"])
+        calculate_monthly_cost(
+            data["cpu_cores"], data["ram_gb"], data["storage_gb"]
+        )
         for data in resources.values()
     )
     return {
